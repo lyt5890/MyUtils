@@ -132,7 +132,7 @@ class MyPromise {
       } catch (error) {
         // executor(this._value); 运行失败的处理
         reject(error);
-        console.log(error);
+        console.log(error, "_runOneHandler");
       }
       //
     });
@@ -150,6 +150,131 @@ class MyPromise {
       this._pushHandle(onFulfilled, FULFILLED, resolve, reject);
       this._pushHandle(onRejected, REJECTED, resolve, reject);
       this._runHandlers(); //每添加一个then之后，需要执行一下hendler
+    });
+  }
+
+  /**
+   * 失败的处理
+   * @param {Function} onRejected
+   */
+  catch(onRejected) {
+    return this.then(null, onRejected);
+  }
+  /**
+   * 不管失败还是成功都需要执行的函数
+   * @param {*} onsettled
+   */
+  finally(onsettled) {
+    return this.then(
+      (data) => {
+        onsettled();
+        return data;
+      },
+      (reason) => {
+        onsettled();
+        throw reason;
+      }
+    );
+  }
+
+  /**
+   * 返回一个已完成的Promise
+   * 特殊情况：
+   * 1. 传递的data本身就是ES6的Promise对象
+   * 2. 传递的data是PromiseLike（Promise A+），返回新的Promise，状态和其保持一致即可
+   * @param {any} data
+   */
+  static resolve(data) {
+    if (data instanceof MyPromise) {
+      return data;
+    }
+    return new MyPromise((resolve, reject) => {
+      if (isPromise(data)) {
+        data.then(resolve, reject);
+      } else {
+        //不是promise 那么就直接成功，传递返回值
+        resolve(data);
+      }
+    });
+  }
+  /**
+   * 得到一个被拒绝的promise
+   * @param {any} reason
+   */
+  static reject(reason) {
+    return new MyPromise((resolve, reject) => {
+      reject(reason);
+    });
+  }
+
+  /**
+   * 得到一个新的Promise
+   * 该Promise的状态取决于proms的执行
+   * proms是一个迭代器，包含多个Promise
+   * 全部Promise成功，则返回的Promise成功，数据为所有Promise成功的数据，并且顺序是按照传入的顺序排列
+   * 只要有一个Promise失败，则返回的Promise失败，原因是第一个失败的Promise的原因
+   * @param {iterator} proms
+   */
+  static all(proms) {
+    return new MyPromise((resolve, reject) => {
+      try {
+        const results = []; //完成的promise值的记录
+        let count = 0; // Promise的总数
+        let fulfilledCount = 0; // 已完成的数量
+        for (const p of proms) {
+          const i = count;
+          count++;
+          MyPromise.resolve(p).then((data) => {
+            fulfilledCount++;
+            results[i] = data;
+            if (fulfilledCount == count) {
+              resolve(results);
+            }
+          }, reject);
+        }
+        if (count == 0) {
+          resolve(results);
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * 等待所有的Promise有结果之后
+   * 该方法返回的Promise完成
+   * 并且按照顺序将所有结果汇总
+   * @param {iterator} proms
+   */
+  static allSettled(proms) {
+    const fn = [];
+    for (const p of proms) {
+      fn.push(
+        MyPromise.resolve(p).then(
+          (value) => ({
+            status: FULFILLED,
+            value,
+          }),
+          (reason) => ({
+            status: REJECTED,
+            reason,
+          })
+        )
+      );
+    }
+    return MyPromise.all(fn);
+  }
+
+  /**
+   * 返回的Promise与第一个有结果的一致
+   * @param {iterator} proms
+   */
+  static race(proms) {
+    return new MyPromise((resolve, reject) => {
+      for (const p of proms) {
+        MyPromise.resolve(p).then(resolve, reject);
+      }
     });
   }
 }
