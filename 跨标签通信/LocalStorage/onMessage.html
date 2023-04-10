@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>接收</title>
+  </head>
+  <body>
+    <script>
+      //监听window的storage事件
+      window.onstorage = (e) => {
+        //   - *key*：告诉我们被修改的条目的键。
+
+        //   - *newValue*：告诉我们被修改后的新值。
+
+        //   - *oldValue*：告诉我们修改前的值。
+
+        //   - *storageArea*：指向事件监听对应的 *Storage* 对象。
+
+        //   - *url*：原始触发 *storage* 事件的那个网页的地址。
+        console.log(e);
+      };
+    </script>
+  </body>
+</html>
