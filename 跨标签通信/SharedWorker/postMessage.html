@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>发送消息</title>
+  </head>
+  <body>
+    <input type="text" name="" id="in" />
+    <button id="but">发送</button>
+    <script>
+      const inp = document.getElementById("in");
+      const but = document.getElementById("but");
+      const worker = new SharedWorker("worker.js");
+      but.onclick = function () {
+        worker.port.postMessage(inp.value);
+      };
+    </script>
+  </body>
+</html>
