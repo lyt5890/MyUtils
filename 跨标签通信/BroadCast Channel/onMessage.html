@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>接受消息</title>
+  </head>
+  <body>
+    <div></div>
+    <script>
+      const div = document.querySelector("div");
+      //广播的频道需要与发送一致
+      const broadcastChannel = new BroadcastChannel("post");
+      //接收消息
+      broadcastChannel.addEventListener("message", function (event) {
+        console.log(event.data);
+        //发送消息
+        broadcastChannel.postMessage("收到！！！");
+      });
+    </script>
+  </body>
+</html>
